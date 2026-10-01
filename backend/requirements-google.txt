@@ -1,0 +1,6 @@
+# Only needed if you want to generate real Google Meet links.
+# Install with: pip install -r requirements-google.txt
+-r requirements.txt
+google-api-python-client>=2.100,<3
+google-auth>=2.23,<3
+google-auth-oauthlib>=1.1,<2

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.sqlite3
+backend/staticfiles/
+.coverage
+htmlcov/
+
+# Secrets
+.env
+client_secret*.json
+credentials*.json
+token*.json
+
+# Node
+node_modules/
+frontend/dist/
+*.log
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

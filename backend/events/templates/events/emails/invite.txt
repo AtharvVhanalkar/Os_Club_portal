@@ -1,0 +1,14 @@
+Hi {{ user.first_name|default:"there" }},
+
+You're registered for "{{ event.title }}".
+
+When: {{ starts_at|date:"l, j F Y, g:i A" }} – {{ ends_at|date:"g:i A" }} ({{ starts_at|date:"T" }})
+{% if event.location %}Where: {{ event.location }}
+{% endif %}{% if event.meet_link %}Join online: {{ event.meet_link }}
+{% endif %}
+{% if event.description %}{{ event.description }}
+
+{% endif %}Session page: {{ event_url }}
+
+See you there!
+Open Source Club
