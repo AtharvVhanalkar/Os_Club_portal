@@ -14,7 +14,7 @@ Closes #<!-- issue number -->
 
 ## Checklist
 
-- [ ] I was assigned to the linked issue
+- [ ] I commented on the issue first.
 - [ ] My branch is up to date with `upstream/main`
 - [ ] `python manage.py test` passes (backend changes)
 - [ ] `npm run lint` and `npm run build` pass (frontend changes)

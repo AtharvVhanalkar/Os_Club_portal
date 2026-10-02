@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 User = get_user_model()
 
@@ -36,3 +36,15 @@ class AuthTests(APITestCase):
         User.objects.create_user(email="ravi@example.com", password="a-strong-pass-123", first_name="Ravi")
         response = self.client.post(reverse("login"), {"email": "ravi@example.com", "password": "wrong"})
         self.assertEqual(response.status_code, 400)
+
+    def test_login_works_with_django_admin_session_cookie(self):
+        # Being logged in to /admin/ in the same browser must not break API login with a CSRF error.
+        user = User.objects.create_user(email="ravi@example.com", password="a-strong-pass-123", first_name="Ravi")
+        client = APIClient(enforce_csrf_checks=True)
+        client.force_login(user)
+        response = client.post(
+            reverse("login"),
+            {"email": "ravi@example.com", "password": "a-strong-pass-123"},
+            HTTP_ORIGIN="http://localhost:5173",
+        )
+        self.assertEqual(response.status_code, 200)

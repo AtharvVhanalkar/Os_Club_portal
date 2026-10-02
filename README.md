@@ -50,6 +50,7 @@ pip install -r requirements.txt
 cp .env.example .env             # Windows: copy .env.example .env
 python manage.py migrate
 python manage.py seed_demo       # optional: demo users and sessions
+python manage.py collectstatic
 python manage.py runserver
 ```
 
