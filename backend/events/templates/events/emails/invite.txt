@@ -10,5 +10,5 @@ When: {{ starts_at|date:"l, j F Y, g:i A" }} – {{ ends_at|date:"g:i A" }} ({{ 
 
 {% endif %}Session page: {{ event_url }}
 
-See you there!
+See you their!
 Open Source Club

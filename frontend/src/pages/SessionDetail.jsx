@@ -112,7 +112,7 @@ export default function SessionDetail() {
 
         {user?.is_organizer && (
           <p>
-            <Link to={`/organize/${session.id}`}>Manage this session</Link>
+            <Link to="/organize">Manage this session</Link>
           </p>
         )}
       </div>

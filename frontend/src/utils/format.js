@@ -21,7 +21,7 @@ export const MODE_LABELS = {
 export function seatsLabel(session) {
   if (session.seats_left === null) return `${session.rsvp_count} going`
   if (session.seats_left === 0) return 'Full'
-  return `${session.seats_left} of ${session.capacity} seats left`
+  return `${session.seats_left - 1} of ${session.capacity} seats left`
 }
 
 // <input type="datetime-local"> works with "YYYY-MM-DDTHH:mm" in local time.
