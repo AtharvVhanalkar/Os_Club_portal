@@ -12,7 +12,7 @@ export default function Contributors() {
     <section className="page">
       <h1>Contributors</h1>
       <p className="muted">
-        Everyone who has merged a pull request into this project. Want to be here? Add a file to{' '}
+        Anyone who has merged a pull request into this project. Want to be here? Add a file to{' '}
         <code>frontend/src/contributors/</code> and open a pull request.
       </p>
 
