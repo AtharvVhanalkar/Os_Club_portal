@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from .models import RSVP, Event
+from .utils import build_google_calendar_link
 
 User = get_user_model()
 
@@ -214,6 +215,55 @@ class EventAPITests(APITestCase):
         self.client.force_authenticate(self.organizer)
         response = self.client.post(self.url("meet-link/"))
         self.assertEqual(response.status_code, 400)
+
+    # --- Google Calendar Link ---
+
+    def test_google_calendar_link_hidden_from_non_attendees(self):
+        """Non-registered users should not see the Google Calendar link."""
+        self.client.force_authenticate(self.student)
+        response = self.client.get(self.url())
+        self.assertIsNone(response.data.get("google_calendar_link"))
+
+    def test_google_calendar_link_visible_after_rsvp(self):
+        """Users who RSVP'd should see the Google Calendar link."""
+        RSVP.objects.create(event=self.event, user=self.student)
+        self.client.force_authenticate(self.student)
+        response = self.client.get(self.url())
+
+        calendar_link = response.data.get("google_calendar_link")
+        self.assertIsNotNone(calendar_link)
+        self.assertIn("calendar.google.com", calendar_link)
+        self.assertIn("action=TEMPLATE", calendar_link)
+        self.assertIn(self.event.title, calendar_link)
+
+    def test_google_calendar_link_includes_event_details(self):
+        """Calendar link should include title, dates, location, and description."""
+        link = build_google_calendar_link(self.event)
+
+        # Check that the link contains key parameters
+        self.assertIn("calendar.google.com/calendar/render", link)
+        self.assertIn("action=TEMPLATE", link)
+        self.assertIn("text=", link)  # Title
+        self.assertIn("dates=", link)  # Date range
+
+        # If location exists, it should be in the link
+        if self.event.location:
+            self.assertIn("location=", link)
+
+        # If description exists, it should be in the link
+        if self.event.description:
+            self.assertIn("details=", link)
+
+    def test_google_calendar_link_includes_meet_link_in_description(self):
+        """Calendar link should include meeting link in description if available."""
+        self.event.meet_link = "https://meet.example.com/test123"
+        self.event.save()
+
+        link = build_google_calendar_link(self.event)
+
+        # The meet_link should be embedded in the details parameter
+        self.assertIn("details=", link)
+        # Note: URL encoding means the link will be encoded in the query string
 
     def _payload(self):
         start = timezone.now() + timedelta(days=7)

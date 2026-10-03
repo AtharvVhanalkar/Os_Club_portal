@@ -4,6 +4,7 @@ from rest_framework import serializers
 from accounts.serializers import UserSerializer
 
 from .models import RSVP, Event
+from .utils import build_google_calendar_link
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class EventSerializer(serializers.ModelSerializer):
     seats_left = serializers.SerializerMethodField()
     has_rsvped = serializers.SerializerMethodField()
     meet_link = serializers.SerializerMethodField()
+    google_calendar_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -27,6 +29,7 @@ class EventSerializer(serializers.ModelSerializer):
             "seats_left",
             "has_rsvped",
             "meet_link",
+            "google_calendar_link",
             "invites_sent_at",
             "created_at",
         )
@@ -46,6 +49,14 @@ class EventSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated and (user.is_staff or self.get_has_rsvped(obj)):
             return obj.meet_link or None
+        return None
+
+    def get_google_calendar_link(self, obj):
+        """Google Calendar link is only visible to users who have RSVP'd."""
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated and self.get_has_rsvped(obj):
+            return build_google_calendar_link(obj)
         return None
 
     def validate(self, attrs):
