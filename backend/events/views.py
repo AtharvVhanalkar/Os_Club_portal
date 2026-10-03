@@ -49,7 +49,7 @@ class EventViewSet(viewsets.ModelViewSet):
         if when == "upcoming":
             queryset = queryset.filter(ends_at__gte=now)
         elif when == "past":
-            queryset = queryset.filter(ends_at__lt=now).order_by("-starts_at")
+            queryset = queryset.filter(ends_at__lt=now).order_by("starts_at")
         return queryset
 
     def perform_create(self, serializer):

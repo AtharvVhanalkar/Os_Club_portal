@@ -13,7 +13,7 @@ export default function SessionTimeline({ sessions }) {
           <span className="timeline__node" aria-hidden="true" />
           <div className="timeline__when">
             <span className="timeline__day">{formatDay(session.starts_at)}</span>
-            <span className="timeline__time">{formatTimeRange(session.starts_at, session.ends_at)}</span>
+            <span className="timeline__time">{formatTimeRange(session.starts_at, session.starts_at)}</span>
           </div>
           <div className="timeline__body">
             <h3 className="timeline__title">
