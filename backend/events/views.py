@@ -13,7 +13,7 @@ from meetings.providers import MeetingProviderError
 from .models import RSVP, Event
 from .permissions import IsOrganizer, IsOrganizerOrReadOnly
 from .serializers import AttendeeSerializer, EventSerializer
-from .services import ensure_meet_link, send_invites
+from .services import ensure_meet_link, send_confirmation_email, send_invites
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -80,6 +80,9 @@ class EventViewSet(viewsets.ModelViewSet):
                 RSVP.objects.create(event=locked, user=request.user)
             except IntegrityError:
                 raise ValidationError({"detail": "You are already registered for this session."})
+
+        # Send confirmation email immediately after successful RSVP
+        send_confirmation_email(event, request.user)
 
         return Response(self.get_serializer(self._refreshed(event)).data, status=status.HTTP_201_CREATED)
 

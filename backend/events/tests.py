@@ -111,6 +111,66 @@ class EventAPITests(APITestCase):
         response = self.client.post(self.url("rsvp/"))
         self.assertEqual(response.status_code, 400)
 
+    def test_confirmation_email_sent_on_rsvp(self):
+        """Test that a confirmation email is sent immediately when someone RSVPs."""
+        self.client.force_authenticate(self.student)
+        mail.outbox.clear()  # Clear any existing emails
+
+        response = self.client.post(self.url("rsvp/"))
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(mail.outbox), 1)
+
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ["student@example.com"])
+        self.assertIn("Registration confirmed", email.subject)
+        self.assertIn(self.event.title, email.subject)
+        self.assertIn(self.event.title, email.body)
+        self.assertIn("Stu", email.body)  # First name in greeting
+
+    def test_confirmation_email_without_meet_link(self):
+        """Test confirmation email shows appropriate message when meet link doesn't exist."""
+        self.client.force_authenticate(self.student)
+        mail.outbox.clear()
+
+        self.client.post(self.url("rsvp/"))
+
+        email = mail.outbox[0]
+        self.assertIn("meeting link will be sent", email.body)
+        self.assertNotIn("https://", email.body)  # No actual link present
+
+    def test_confirmation_email_with_meet_link(self):
+        """Test confirmation email includes meet link if it already exists."""
+        self.event.meet_link = "https://meet.example.com/test123"
+        self.event.save()
+        self.client.force_authenticate(self.student)
+        mail.outbox.clear()
+
+        self.client.post(self.url("rsvp/"))
+
+        email = mail.outbox[0]
+        self.assertIn("https://meet.example.com/test123", email.body)
+
+    def test_confirmation_email_different_from_invite(self):
+        """Test that confirmation email is different from the invite email sent by organizers."""
+        # First, student RSVPs and gets confirmation
+        self.client.force_authenticate(self.student)
+        self.client.post(self.url("rsvp/"))
+        confirmation_email = mail.outbox[0]
+
+        # Then organizer sends invites
+        self.client.force_authenticate(self.organizer)
+        self.client.post(self.url("send-invites/"))
+        invite_email = mail.outbox[1]
+
+        # Subjects should be different
+        self.assertIn("Registration confirmed", confirmation_email.subject)
+        self.assertIn("You're in", invite_email.subject)
+
+        # Both should be sent to the student
+        self.assertEqual(confirmation_email.to, ["student@example.com"])
+        self.assertEqual(invite_email.to, ["student@example.com"])
+
     def test_full_session_rejects_rsvp(self):
         self.event.capacity = 1
         self.event.save()

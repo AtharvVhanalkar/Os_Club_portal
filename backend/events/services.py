@@ -43,6 +43,43 @@ def build_invite_email(event, user):
     return message
 
 
+def build_confirmation_email(event, user):
+    """Build a confirmation email to send immediately after RSVP."""
+    context = {
+        "event": event,
+        "user": user,
+        "event_url": f"{settings.FRONTEND_URL}/sessions/{event.id}",
+        "starts_at": timezone.localtime(event.starts_at),
+        "ends_at": timezone.localtime(event.ends_at),
+    }
+    subject = f"Registration confirmed: {event.title}"
+    text_body = render_to_string("events/emails/confirmation.txt", context)
+    html_body = render_to_string("events/emails/confirmation.html", context)
+
+    message = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    )
+    message.attach_alternative(html_body, "text/html")
+    return message
+
+
+def send_confirmation_email(event, user):
+    """
+    Send a confirmation email immediately after a user RSVPs.
+    Returns True if sent successfully, False otherwise.
+    """
+    message = build_confirmation_email(event, user)
+    try:
+        sent = message.send()
+        return sent > 0
+    except Exception:
+        # Log the error in production, but don't block the RSVP
+        return False
+
+
 def send_invites(event):
     """
     Email every RSVP'd member with session details (and the meeting link for
